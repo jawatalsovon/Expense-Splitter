@@ -107,6 +107,14 @@ export default function Dashboard() {
     setSubmitting(true);
     const inviteCode = generateInviteCode();
 
+    // Diagnose auth state
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (!currentSession) {
+      toast.error("Not authenticated — please log out and log back in.");
+      setSubmitting(false);
+      return;
+    }
+
     // Ensure profile exists before creating a group (FK dependency)
     if (!profile) {
       const { error: profileErr } = await supabase.from("profiles").upsert({

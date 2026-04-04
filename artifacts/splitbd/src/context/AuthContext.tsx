@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { getRandomAvatarColor } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 
 interface AuthContextType {
@@ -20,17 +21,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchProfile(userId: string) {
-    const { data } = await supabase
+  async function fetchOrCreateProfile(authUser: User) {
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("id", authUser.id)
       .single();
-    if (data) setProfile(data);
+
+    if (data) {
+      setProfile(data);
+      return;
+    }
+
+    // Profile missing (signed up before tables were created) — create it now
+    const fallbackName =
+      authUser.user_metadata?.display_name ||
+      authUser.email?.split("@")[0] ||
+      "User";
+
+    const { data: created } = await supabase
+      .from("profiles")
+      .upsert({
+        id: authUser.id,
+        display_name: fallbackName,
+        avatar_color: getRandomAvatarColor(),
+      })
+      .select()
+      .single();
+
+    if (created) setProfile(created);
   }
 
   async function refreshProfile() {
-    if (user) await fetchProfile(user.id);
+    if (user) await fetchOrCreateProfile(user);
   }
 
   async function signOut() {
@@ -42,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id).finally(() => setLoading(false));
+        fetchOrCreateProfile(session.user).finally(() => setLoading(false));
       } else {
         setLoading(false);
       }
@@ -52,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchOrCreateProfile(session.user);
       } else {
         setProfile(null);
       }

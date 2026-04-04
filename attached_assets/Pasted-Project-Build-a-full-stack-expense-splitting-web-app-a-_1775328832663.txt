@@ -1,0 +1,210 @@
+Project: Build a full-stack expense splitting web app — a lightweight Splitwise alternative. It must be publicly usable by anyone, with persistent cloud data, authentication, and real-time sync.
+
+TECH STACK
+
+Frontend: React, Tailwind CSS, shadcn/ui components
+Backend/DB/Auth/Realtime: Supabase
+Routing: React Router v6
+State: React Context or Zustand
+Hosting target: Vercel (just build for production export)
+
+
+AUTHENTICATION
+
+Email + password signup and login using Supabase Auth
+Optional: Google OAuth login button
+After signup, prompt user to set a display name (stored in a profiles table)
+Protected routes — unauthenticated users are redirected to login
+Persistent session (stay logged in on refresh)
+Simple, clean auth screens — no clutter
+
+
+DATABASE SCHEMA (implement exactly)
+profiles
+
+id (uuid, FK to auth.users)
+display_name (text)
+avatar_color (text — a hex color auto-assigned on signup from a preset palette, used to color-code this user everywhere)
+created_at
+
+groups
+
+id (uuid)
+name (text)
+description (text, optional)
+created_by (uuid, FK to profiles)
+invite_code (text, unique, 8-char random string generated on creation)
+created_at
+
+group_members
+
+id (uuid)
+group_id (FK to groups)
+user_id (FK to profiles)
+joined_at
+UNIQUE constraint on (group_id, user_id)
+
+expenses
+
+id (uuid)
+group_id (FK to groups)
+description (text)
+total_amount (numeric)
+created_by (uuid, FK to profiles)
+created_at
+notes (text, optional)
+
+expense_payers (who paid, and how much — supports split payment)
+
+id (uuid)
+expense_id (FK to expenses)
+user_id (FK to profiles)
+amount_paid (numeric)
+
+expense_splits (who owes for this expense, equally divided)
+
+id (uuid)
+expense_id (FK to expenses)
+user_id (FK to profiles)
+share_amount (numeric — total_amount / number of people splitting)
+
+settlements
+
+id (uuid)
+group_id (FK to groups)
+paid_by (uuid, FK to profiles)
+paid_to (uuid, FK to profiles)
+amount (numeric)
+note (text, optional)
+created_at
+
+Enable Row Level Security (RLS) on all tables. Users can only read/write data for groups they are members of.
+
+PAGES & FLOWS
+1. Landing Page (/)
+
+App name, tagline: "Split expenses. Not friendships."
+Brief feature highlights (groups, real-time, settle up)
+CTA buttons: "Create Account" and "Log In"
+Clean, modern design
+
+2. Auth Pages (/login, /signup)
+
+Minimal and clean
+On signup: collect email, password, display name
+On success: redirect to /dashboard
+
+3. Dashboard (/dashboard)
+
+Shows all groups the user belongs to
+Each group card shows: group name, member count, and user's net balance in that group (green if owed, red if owing, grey if settled)
+Button: "Create Group" — modal that takes group name + optional description, auto-generates invite code
+Button: "Join Group" — modal with an invite code input field
+Top navbar with user avatar color dot, display name, and logout button
+
+4. Group Page (/group/:groupId)
+This is the main screen. It has 3 tabs:
+Tab 1 — Balances
+
+Each member shown with their net balance in this group
+Below that: Simplified Settlements — the minimum transactions to zero out all debts, calculated using a greedy debt-simplification algorithm. Displayed as: "[Person A] owes [Person B] ৳X" with a "Settle Up" button on each line
+Clicking "Settle Up" opens a confirmation modal, then logs it to the settlements table and updates balances in real time
+At the top: show the current user's personal balance summary prominently
+
+Tab 2 — Expenses
+
+Scrollable, reverse-chronological list of all expenses
+Each expense card shows: description, total amount, paid by (with avatar color), split among (small colored dots), date, and per-person share
+FAB (floating action button) or prominent "+ Add Expense" button
+Clicking an expense expands it to show full payer breakdown and split breakdown
+Expense creator or group creator can delete an expense (with confirmation)
+
+Tab 3 — Members
+
+List of all members with avatar color, display name
+Show the group's invite code prominently with a copy button
+Group creator can see a "Remove member" option (optional, but include the UI)
+
+5. Add Expense Modal/Sheet (triggered from Tab 2)
+This is the most important UX flow. Build it as a multi-step bottom sheet or modal:
+Step 1 — Basic Info
+
+Description (text input, required)
+Total Amount (numeric input, required, ৳ prefix)
+Optional notes
+
+Step 2 — Who Paid?
+
+Default: the current logged-in user paid the full amount
+Toggle to "Multiple payers" mode
+In multiple payers mode: show each group member with a numeric input for how much they paid. The amounts must sum to the total — show a live running total and a warning if they don't match before allowing proceed
+
+Step 3 — Who is Splitting?
+
+Checkboxes for each group member (all selected by default)
+User can deselect members not involved in this expense
+Show the calculated share per person live as checkboxes change (total ÷ selected count)
+
+Confirmation step: Show a summary card of the expense before submitting.
+On submit: write to expenses, expense_payers, and expense_splits tables in a single Supabase transaction.
+
+BALANCE CALCULATION LOGIC (implement carefully)
+For each expense, a member's net contribution is:
+net = amount_paid - share_amount
+If net > 0 → others owe them
+If net < 0 → they owe others
+Aggregate across all expenses in a group to get each member's total net balance.
+Debt simplification algorithm:
+
+Calculate net balance for each member
+Separate into creditors (positive) and debtors (negative)
+Use a greedy matching: match the largest debtor to the largest creditor, settle as much as possible, repeat until all balances are zero
+This produces the minimum number of transactions needed
+
+This logic should run client-side after fetching all expense data for the group. Also factor in settled payments from the settlements table.
+
+REAL-TIME
+
+Use Supabase Realtime subscriptions on the expenses, expense_payers, expense_splits, and settlements tables scoped to the current group
+When any group member adds an expense or settles a debt, all other members on the Group Page see it update instantly without refresh
+Show a subtle toast notification: "Tasin added an expense: Dinner ৳350"
+
+
+UI/UX REQUIREMENTS
+
+Mobile-first, but functional on desktop too (max-width container centered on wide screens)
+Each user has a persistent avatar color (from a palette of 8 distinct colors assigned at signup) — used as a colored circle avatar everywhere instead of a photo
+Currency: ৳ (Bangladeshi Taka) — but make the currency symbol a config constant so it can be changed
+Green for positive balances, red for negative, gray for zero
+Smooth transitions and loading skeletons (not blank screens while fetching)
+Empty states with helpful text (e.g. "No expenses yet — add the first one!")
+All destructive actions (delete expense, settle up, leave group) require a confirmation dialog
+Toast notifications for all key actions (expense added, settled, error, etc.)
+Responsive bottom sheets on mobile for the Add Expense flow
+
+
+EDGE CASES TO HANDLE
+
+A payer can also be in the split (they paid but also owe a share — their net adjusts correctly)
+An expense where only one person both pays and splits = no debt created
+If a user leaves a group (future-proofing): their historical expenses remain, balances still calculate correctly
+Prevent duplicate group joins via invite code
+Validate that expense amounts are positive numbers only
+If the sum of payer amounts ≠ total expense amount, block submission with a clear error
+
+
+SAMPLE SCENARIO (use only to validate logic, do not hardcode)
+Group: "Flat 4B" with members Jawat, Musahid, Tasin, Sajin
+
+Jawat paid ৳40 bus fare → split between Jawat & Musahid
+Tasin paid ৳120, Sajin paid ৳80 (total ৳200) for dinner → split among Jawat, Tasin, Sajin
+Jawat paid ৳30 rickshaw → split among Jawat, Tasin, Sajin
+Jawat paid ৳100, Tasin paid ৳100 (total ৳200) for groceries → split among all four
+
+Expected net balances after all four expenses:
+
+Jawat: +৳86.67 (is owed)
+Tasin: −৳3.33 (owes)
+Sajin: −৳113.33 (owes)
+Musahid: −৳20 (owes... wait, Musahid only appears in expense 1... net: paid ৳0, owes ৳20)
+Verify your algorithm produces the correct minimum settlement transactions.

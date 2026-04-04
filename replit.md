@@ -1,27 +1,52 @@
-# Workspace
+# SplitBD - Expense Splitting App
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+A full-stack expense splitting web app (Splitwise alternative) built with React + Vite + Supabase.
 
 ## Stack
 
+- **Frontend**: React, Tailwind CSS, Wouter (routing)
+- **Backend/Auth/DB/Realtime**: Supabase
 - **Monorepo tool**: pnpm workspaces
 - **Node.js version**: 24
 - **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
 
 ## Key Commands
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+- `pnpm --filter @workspace/splitbd run dev` — run the frontend locally
+- `pnpm --filter @workspace/api-server run dev` — run the API server
 
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+## Architecture
+
+- `artifacts/splitbd/` — React frontend (all pages, components, logic)
+- `artifacts/api-server/` — Express API server (health check only, app data lives in Supabase)
+- All data is stored in Supabase (PostgreSQL) with Row Level Security
+
+## Supabase Setup
+
+Run `artifacts/splitbd/supabase-schema.sql` in the Supabase SQL Editor to create all tables and RLS policies.
+
+### Tables
+- `profiles` — user profiles (display name, avatar color)
+- `groups` — expense groups
+- `group_members` — group membership
+- `expenses` — individual expenses
+- `expense_payers` — who paid what for each expense
+- `expense_splits` — who owes what for each expense
+- `settlements` — recorded debt settlements
+
+## Features
+
+- Email/password auth via Supabase Auth
+- Create/join groups via invite codes
+- Add expenses with flexible split (equal, multiple payers)
+- Greedy debt simplification algorithm (minimum transactions)
+- Real-time updates via Supabase Realtime subscriptions
+- Currency: ৳ (configurable in `src/lib/constants.ts`)
+- Color-coded avatar system (8 preset colors)
+
+## Environment Variables
+
+- `VITE_SUPABASE_URL` — Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` — Supabase anon/public key

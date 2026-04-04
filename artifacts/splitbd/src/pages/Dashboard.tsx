@@ -107,6 +107,20 @@ export default function Dashboard() {
     setSubmitting(true);
     const inviteCode = generateInviteCode();
 
+    // Ensure profile exists before creating a group (FK dependency)
+    if (!profile) {
+      const { error: profileErr } = await supabase.from("profiles").upsert({
+        id: user!.id,
+        display_name: user!.email?.split("@")[0] ?? "User",
+        avatar_color: "#4F46E5",
+      });
+      if (profileErr) {
+        toast.error(`Profile error: ${profileErr.message}`);
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const { data: group, error } = await supabase
       .from("groups")
       .insert({ name: createName.trim(), description: createDesc.trim() || null, created_by: user!.id, invite_code: inviteCode })
@@ -114,7 +128,7 @@ export default function Dashboard() {
       .single();
 
     if (error || !group) {
-      toast.error("Failed to create group");
+      toast.error(`Failed to create group: ${error?.message ?? "unknown error"}`);
       setSubmitting(false);
       return;
     }

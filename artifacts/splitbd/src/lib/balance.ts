@@ -30,8 +30,8 @@ export function calculateMemberBalances(
   }
 
   for (const repayment of repayments) {
-    balanceMap[repayment.paid_by] = (balanceMap[repayment.paid_by] ?? 0) - repayment.amount;
-    balanceMap[repayment.paid_to] = (balanceMap[repayment.paid_to] ?? 0) + repayment.amount;
+    balanceMap[repayment.paid_by] = (balanceMap[repayment.paid_by] ?? 0) + repayment.amount;
+    balanceMap[repayment.paid_to] = (balanceMap[repayment.paid_to] ?? 0) - repayment.amount;
   }
 
   return members.map((m) => ({

@@ -100,7 +100,7 @@ export function AddExpenseModal({ group, members, onClose, onSuccess }: Props) {
       ? payers
           .filter((p) => parseFloat(p.amount) > 0)
           .map((p) => ({ expense_id: expense.id, user_id: p.user_id, amount_paid: parseFloat(p.amount) }))
-      : [{ expense_id: expense.id, user_id: user!.id, amount_paid: total }];
+      : [{ expense_id: expense.id, user_id: payers[0]?.user_id ?? user!.id, amount_paid: total }];
 
     const splitInserts = Array.from(selectedSplitMembers).map((uid) => ({
       expense_id: expense.id,
@@ -182,14 +182,22 @@ export function AddExpenseModal({ group, members, onClose, onSuccess }: Props) {
           {step === 2 && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                {/* FIX: Reset payers to full members array when switching to single payer mode */}
                 <button
-                  onClick={() => setMultiplePayers(false)}
+                  onClick={() => {
+                    setMultiplePayers(false);
+                    setPayers(members.map((m) => ({ user_id: m.user_id, amount: "" })));
+                  }}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${!multiplePayers ? "bg-white dark:bg-slate-600 shadow text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400"}`}
                 >
                   {T.singlePayer}
                 </button>
+                {/* FIX: Reset payers to full members array when switching to multiple payer mode */}
                 <button
-                  onClick={() => setMultiplePayers(true)}
+                  onClick={() => {
+                    setMultiplePayers(true);
+                    setPayers(members.map((m) => ({ user_id: m.user_id, amount: "" })));
+                  }}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${multiplePayers ? "bg-white dark:bg-slate-600 shadow text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400"}`}
                 >
                   {T.multiplePayers}
@@ -203,7 +211,7 @@ export function AddExpenseModal({ group, members, onClose, onSuccess }: Props) {
                       key={m.user_id}
                       onClick={() => setPayers([{ user_id: m.user_id, amount: totalAmount }])}
                       className={`w-full flex items-center gap-2.5 p-3 rounded-xl border transition-colors ${
-                        payers[0]?.user_id === m.user_id || (payers.length === 0 && m.user_id === user?.id)
+                        payers[0]?.user_id === m.user_id
                           ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30"
                           : "border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500"
                       }`}
@@ -212,7 +220,7 @@ export function AddExpenseModal({ group, members, onClose, onSuccess }: Props) {
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                         {m.user_id === user?.id ? `${m.profile.display_name} (${T.youLower})` : m.profile.display_name}
                       </span>
-                      {(payers[0]?.user_id === m.user_id || (payers.length === 0 && m.user_id === user?.id)) && (
+                      {payers[0]?.user_id === m.user_id && (
                         <Check size={16} className="ml-auto text-indigo-600 dark:text-indigo-400" />
                       )}
                     </button>
@@ -220,7 +228,7 @@ export function AddExpenseModal({ group, members, onClose, onSuccess }: Props) {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className={`text-xs font-medium text-right mb-2 ${Math.abs(payerTotal - total) < 0.01 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
+                  <div className={`text-xs font-medium text-right mb-2 ${Math.abs(payerTotal - total) < 0.01 && payerTotal > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
                     {CURRENCY_SYMBOL}{payerTotal.toFixed(2)} / {CURRENCY_SYMBOL}{total.toFixed(2)}
                   </div>
                   {members.map((m) => (
@@ -299,7 +307,10 @@ export function AddExpenseModal({ group, members, onClose, onSuccess }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-1.5">{T.paidByLabel}</p>
-                  {(multiplePayers ? payers.filter((p) => parseFloat(p.amount) > 0) : [payers[0] || { user_id: user!.id, amount: totalAmount }]).map((p) => {
+                  {(multiplePayers
+                    ? payers.filter((p) => parseFloat(p.amount) > 0)
+                    : [payers[0] || { user_id: user!.id, amount: totalAmount }]
+                  ).map((p) => {
                     const prof = getProfile(p.user_id);
                     return (
                       <div key={p.user_id} className="flex items-center justify-between mb-1">

@@ -38,7 +38,7 @@ export default function Signup() {
       if (profileError) {
         toast.error("Account created but couldn't save profile. Please try logging in.");
       } else {
-        toast.success("Account created! Welcome to SplitBD.");
+        toast.success("Account created! Welcome to Hisab.");
         setLocation("/dashboard");
       }
     }
@@ -54,7 +54,7 @@ export default function Signup() {
             <div className="w-9 h-9 bg-indigo-400 rounded-xl flex items-center justify-center font-bold text-indigo-950">
               S
             </div>
-            <span className="font-bold text-xl text-white tracking-tight">SplitBD</span>
+            <span className="font-bold text-xl text-white tracking-tight">Hisab</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Create your account</h1>
           <p className="text-indigo-300 text-sm mt-1">Free forever, no credit card needed</p>

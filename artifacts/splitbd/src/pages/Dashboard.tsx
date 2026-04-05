@@ -201,7 +201,7 @@ export default function Dashboard() {
             <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-xs">
               S
             </div>
-            <span className="font-bold text-slate-800 tracking-tight">SplitBD</span>
+            <span className="font-bold text-slate-800 tracking-tight">Hisab</span>
           </div>
           <div className="flex items-center gap-3">
             {profile && (

@@ -1,4 +1,4 @@
-# SplitBD - Expense Splitting App
+# Hisab - Expense Splitting App
 
 ## Overview
 

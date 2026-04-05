@@ -9,7 +9,7 @@ export default function Landing() {
           <div className="w-8 h-8 bg-indigo-400 rounded-lg flex items-center justify-center font-bold text-indigo-950 text-sm">
             S
           </div>
-          <span className="font-bold text-lg tracking-tight">SplitBD</span>
+          <span className="font-bold text-lg tracking-tight">Hisab</span>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login" className="text-sm text-indigo-200 hover:text-white transition-colors px-3 py-2">

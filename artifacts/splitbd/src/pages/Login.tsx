@@ -29,7 +29,7 @@ export default function Login() {
             <div className="w-9 h-9 bg-indigo-400 rounded-xl flex items-center justify-center font-bold text-indigo-950">
               S
             </div>
-            <span className="font-bold text-xl text-white tracking-tight">SplitBD</span>
+            <span className="font-bold text-xl text-white tracking-tight">Hisab</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
           <p className="text-indigo-300 text-sm mt-1">Sign in to your account</p>

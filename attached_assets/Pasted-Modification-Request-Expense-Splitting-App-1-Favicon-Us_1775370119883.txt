@@ -1,0 +1,47 @@
+Modification Request — Expense Splitting App
+1. Favicon
+
+Use the attached image as the app favicon
+Set it in index.html as both /favicon.ico and apple-touch-icon
+
+
+2. Dark Mode & Light Mode
+
+Add full light/dark mode support using Tailwind's darkMode: 'class' strategy
+On first load, default to the user's system preference
+Add a sun/moon icon toggle button in the top navbar — visible on every screen, switches mode in one click
+Persist the chosen preference in localStorage so it survives refresh
+
+
+3. Bengali Language Support
+
+Add English / বাংলা language switching to the app
+Add a language toggle button (label: EN / বাং) in the top navbar, right next to the dark mode toggle — one click switches language instantly
+Implement as a lightweight custom i18n context (key-value dictionary for both languages) — do not use an external i18n library
+Every UI string must be translated: labels, buttons, placeholders, empty states, toast messages, confirmation dialogs, and navigation items
+Persist language preference in localStorage
+Currency symbol (৳) and numbers stay the same in both languages
+
+
+4. Repayment Tracking
+
+Currently the app tracks how much one person owes another, but has no way to record when that money is actually paid back
+Add a "Record Repayment" feature with the following behaviour:
+
+Data
+
+Create a repayments table in Supabase:
+
+ColumnTypeNotesiduuidPrimary keygroup_iduuidFK → groupspaid_byuuidFK → profiles — person paying backpaid_touuidFK → profiles — person receivingamountnumericMust be positivenotetextOptionalcreated_attimestamptz
+
+Apply RLS: only group members can read/write repayments for their group
+
+UI
+
+On the Balances tab, each simplified settlement line (e.g. "Tasin owes Jawat ৳50") should have a "Mark as Paid" button
+Clicking it opens a confirmation modal showing: who is paying, who is receiving, and the amount — with an optional note field
+On confirm, log the repayment to the repayments table and immediately update all balances in real time without page refresh
+Add a Repayment History collapsible section at the bottom of the Balances tab — reverse-chronological list showing: avatar of payer, name, amount, receiver, optional note, and date
+Repayments must be factored into the net balance calculation — a repayment of ৳50 from Tasin to Jawat reduces Tasin's debt and Jawat's credit by ৳50 accordingly
+Use Supabase Realtime so all group members see balance updates instantly when a repayment is logged
+

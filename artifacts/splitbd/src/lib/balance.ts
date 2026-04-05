@@ -1,9 +1,10 @@
-import type { Expense, Settlement, MemberBalance, SimplifiedDebt, Profile } from "./types";
+import type { Expense, Settlement, MemberBalance, SimplifiedDebt, Profile, Repayment } from "./types";
 
 export function calculateMemberBalances(
   expenses: Expense[],
   settlements: Settlement[],
-  members: { user_id: string; profile: Profile }[]
+  members: { user_id: string; profile: Profile }[],
+  repayments: Repayment[] = []
 ): MemberBalance[] {
   const balanceMap: Record<string, number> = {};
 
@@ -26,6 +27,11 @@ export function calculateMemberBalances(
   for (const settlement of settlements) {
     balanceMap[settlement.paid_by] = (balanceMap[settlement.paid_by] ?? 0) - settlement.amount;
     balanceMap[settlement.paid_to] = (balanceMap[settlement.paid_to] ?? 0) + settlement.amount;
+  }
+
+  for (const repayment of repayments) {
+    balanceMap[repayment.paid_by] = (balanceMap[repayment.paid_by] ?? 0) - repayment.amount;
+    balanceMap[repayment.paid_to] = (balanceMap[repayment.paid_to] ?? 0) + repayment.amount;
   }
 
   return members.map((m) => ({

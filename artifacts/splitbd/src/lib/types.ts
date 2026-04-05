@@ -76,3 +76,15 @@ export interface MemberBalance {
   profile: Profile;
   netBalance: number;
 }
+
+export interface Repayment {
+  id: string;
+  group_id: string;
+  paid_by: string;
+  paid_to: string;
+  amount: number;
+  note: string | null;
+  created_at: string;
+  payer_profile?: Profile;
+  payee_profile?: Profile;
+}

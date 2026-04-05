@@ -2,12 +2,17 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useTheme } from "@/context/ThemeContext";
+import { useLang } from "@/context/LangContext";
+import { Sun, Moon } from "lucide-react";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
+  const { lang, toggleLang, T } = useLang();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,22 +28,36 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 flex items-center justify-center px-4">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <button
+          onClick={toggleLang}
+          className="text-xs font-semibold text-indigo-300 hover:text-white bg-indigo-800/50 hover:bg-indigo-700/60 border border-indigo-700/50 px-2.5 py-1.5 rounded-lg transition-colors"
+        >
+          {lang === "en" ? "বাং" : "EN"}
+        </button>
+        <button
+          onClick={toggleTheme}
+          className="p-2 text-indigo-300 hover:text-white bg-indigo-800/50 hover:bg-indigo-700/60 border border-indigo-700/50 rounded-lg transition-colors"
+          aria-label="Toggle theme"
+        >
+          {isDark ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
+      </div>
+
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-9 h-9 bg-indigo-400 rounded-xl flex items-center justify-center font-bold text-indigo-950">
-              S
-            </div>
-            <span className="font-bold text-xl text-white tracking-tight">Hisab</span>
+            <img src="/hisab-icon.png" className="w-9 h-9 rounded-xl" alt="Hisab" />
+            <span className="font-bold text-xl text-white tracking-tight">{T.appName}</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-          <p className="text-indigo-300 text-sm mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-white">{T.welcomeBack}</h1>
+          <p className="text-indigo-300 text-sm mt-1">{T.signInDesc}</p>
         </div>
 
         <div className="bg-white/8 border border-white/15 rounded-2xl p-6 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-indigo-200 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-indigo-200 mb-1.5">{T.email}</label>
               <input
                 type="email"
                 required
@@ -49,7 +68,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-indigo-200 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-indigo-200 mb-1.5">{T.password}</label>
               <input
                 type="password"
                 required
@@ -64,20 +83,20 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-indigo-500 hover:bg-indigo-400 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg transition-colors mt-2"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? T.signingIn : T.signIn}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm text-indigo-300 mt-5">
-          Don't have an account?{" "}
+          {T.noAccount}{" "}
           <Link href="/signup" className="text-indigo-400 hover:text-white font-medium transition-colors">
-            Sign up free
+            {T.signUpFree}
           </Link>
         </p>
         <p className="text-center mt-3">
           <Link href="/" className="text-xs text-indigo-500 hover:text-indigo-300 transition-colors">
-            ← Back to home
+            {T.backToHome}
           </Link>
         </p>
       </div>

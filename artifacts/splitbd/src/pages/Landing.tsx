@@ -1,22 +1,39 @@
 import { Link } from "wouter";
 import { CURRENCY_SYMBOL } from "@/lib/constants";
+import { useTheme } from "@/context/ThemeContext";
+import { useLang } from "@/context/LangContext";
+import { Sun, Moon } from "lucide-react";
 
 export default function Landing() {
+  const { isDark, toggleTheme } = useTheme();
+  const { lang, toggleLang, T } = useLang();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 text-white">
       <nav className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-400 rounded-lg flex items-center justify-center font-bold text-indigo-950 text-sm">
-            S
-          </div>
-          <span className="font-bold text-lg tracking-tight">Hisab</span>
+          <img src="/hisab-icon.png" className="w-8 h-8 rounded-lg" alt="Hisab" />
+          <span className="font-bold text-lg tracking-tight">{T.appName}</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleLang}
+            className="text-xs font-semibold text-indigo-300 hover:text-white bg-indigo-800/50 hover:bg-indigo-700/60 border border-indigo-700/50 px-2.5 py-1.5 rounded-lg transition-colors"
+          >
+            {lang === "en" ? "বাং" : "EN"}
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-indigo-300 hover:text-white bg-indigo-800/50 hover:bg-indigo-700/60 border border-indigo-700/50 rounded-lg transition-colors"
+            aria-label="Toggle theme"
+          >
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
           <Link href="/login" className="text-sm text-indigo-200 hover:text-white transition-colors px-3 py-2">
-            Log In
+            {T.logIn}
           </Link>
           <Link href="/signup" className="text-sm bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-            Sign Up Free
+            {T.createAccount}
           </Link>
         </div>
       </nav>
@@ -25,17 +42,17 @@ export default function Landing() {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 bg-indigo-800/50 border border-indigo-700/50 rounded-full px-4 py-1.5 text-sm text-indigo-300 mb-8">
             <span className="w-2 h-2 bg-emerald-400 rounded-full" />
-            Free to use, no credit card required
+            {T.freeBadge}
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
-            Split expenses.
+            {T.tagline1}
             <br />
-            <span className="text-indigo-400">Not friendships.</span>
+            <span className="text-indigo-400">{T.tagline2}</span>
           </h1>
 
           <p className="text-lg text-indigo-200 max-w-xl mx-auto mb-10 leading-relaxed">
-            Track shared expenses with friends, family, and roommates. See who owes what, settle up instantly, and keep things fair — always.
+            {T.taglineDesc}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -43,34 +60,22 @@ export default function Landing() {
               href="/signup"
               className="bg-indigo-500 hover:bg-indigo-400 text-white text-base font-semibold px-8 py-3.5 rounded-xl transition-colors shadow-lg shadow-indigo-900/50"
             >
-              Create Account
+              {T.createAccount}
             </Link>
             <Link
               href="/login"
               className="bg-white/10 hover:bg-white/20 text-white text-base font-semibold px-8 py-3.5 rounded-xl transition-colors border border-white/20"
             >
-              Log In
+              {T.logIn}
             </Link>
           </div>
         </div>
 
         <div className="mt-24 grid sm:grid-cols-3 gap-6">
           {[
-            {
-              icon: "👥",
-              title: "Group Expense Tracking",
-              desc: "Create groups for trips, households, or events. Add expenses with flexible split options.",
-            },
-            {
-              icon: "⚡",
-              title: "Real-Time Sync",
-              desc: "Everyone in the group sees updates instantly. No refresh needed, no confusion.",
-            },
-            {
-              icon: `${CURRENCY_SYMBOL}`,
-              title: "Smart Settlement",
-              desc: "Our algorithm calculates the minimum number of payments to zero out all debts.",
-            },
+            { icon: "👥", title: T.featureGroups, desc: T.featureGroupsDesc },
+            { icon: "⚡", title: T.featureRealtime, desc: T.featureRealtimeDesc },
+            { icon: CURRENCY_SYMBOL, title: T.featureSmart, desc: T.featureSmartDesc },
           ].map((f) => (
             <div
               key={f.title}

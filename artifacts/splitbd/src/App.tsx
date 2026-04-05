@@ -1,6 +1,8 @@
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { LangProvider } from "@/context/LangContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
@@ -51,12 +53,16 @@ function Router() {
 
 function App() {
   return (
-    <AuthProvider>
-      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-        <Router />
-      </WouterRouter>
-      <Toaster position="top-center" richColors closeButton />
-    </AuthProvider>
+    <ThemeProvider>
+      <LangProvider>
+        <AuthProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster position="top-center" richColors closeButton />
+        </AuthProvider>
+      </LangProvider>
+    </ThemeProvider>
   );
 }
 
